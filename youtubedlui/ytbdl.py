@@ -3,7 +3,7 @@ import os
 import re
 import shutil
 
-import youtube_dl
+import yt_dlp
 from PySide2.QtCore import Qt, QThread, Signal, QSettings
 from PySide2.QtWidgets import (QApplication, QWidget, QVBoxLayout, QHBoxLayout,
                                QPlainTextEdit, QLabel, QPushButton, QLineEdit,
@@ -48,7 +48,7 @@ class YtbInfo(QThread):
 
     def run(self):
         try:
-            with youtube_dl.YoutubeDL(YtbInfo.OPTS) as ydl:
+            with yt_dlp.YoutubeDL(YtbInfo.OPTS) as ydl:
                 result = ydl.extract_info(self.url, download=False)
         except:
             pass
@@ -91,7 +91,7 @@ class YtbInfo(QThread):
 
 class YtbDl(QThread):
 
-    VERSION = "0.0.1"
+    VERSION = "0.0.2"
 
     OUTPUT_FORMAT = [
         "default",
@@ -262,7 +262,7 @@ class YtbDl(QThread):
             self.opts["outtmpl"] = os.path.join(self.output_path, "%(title).100s.%(ext)s")
             
             if self.ytb_info[url].id or (not ext_url):
-                with youtube_dl.YoutubeDL(self.opts) as ydl:
+                with yt_dlp.YoutubeDL(self.opts) as ydl:
                     ydl.download([url])
 
             else:
@@ -286,7 +286,7 @@ class YtbDl(QThread):
                     else:
                         self.opts["outtmpl"] = os.path.join(entry_path, "%(title).100s.%(ext)s")
 
-                    with youtube_dl.YoutubeDL(self.opts) as ydl:
+                    with yt_dlp.YoutubeDL(self.opts) as ydl:
                         ydl.download([ext_url + entry_id])
 
     def hook(self, data):

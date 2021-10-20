@@ -6,4 +6,5 @@
 * [Python 3](https://www.python.org/downloads/)
 * [PySide2](https://pypi.org/project/PySide2/)
 * [youtube-dl](https://rg3.github.io/youtube-dl/)
+* [yt-dlp](https://github.com/yt-dlp/yt-dlp)
 * [FFmpeg](https://ffmpeg.org/download.html)
