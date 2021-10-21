@@ -3,7 +3,7 @@ import os
 import re
 import shutil
 
-import youtube_dl
+import yt_dlp
 from PySide2.QtCore import Qt, QThread, Signal, QSettings
 from PySide2.QtWidgets import (QApplication, QWidget, QVBoxLayout, QHBoxLayout,
                                QPlainTextEdit, QLabel, QPushButton, QLineEdit,
@@ -48,7 +48,7 @@ class YtbInfo(QThread):
 
     def run(self):
         try:
-            with youtube_dl.YoutubeDL(YtbInfo.OPTS) as ydl:
+            with yt_dlp.YoutubeDL(YtbInfo.OPTS) as ydl:
                 result = ydl.extract_info(self.url, download=False)
         except:
             pass
@@ -91,7 +91,7 @@ class YtbInfo(QThread):
 
 class YtbDl(QThread):
 
-    VERSION = "0.0.1"
+    VERSION = "0.0.2"
 
     OUTPUT_FORMAT = [
         "default",
@@ -174,13 +174,18 @@ class YtbDl(QThread):
         if (out_fmt not in YtbDl.OUTPUT_FORMAT) or (a_fmt not in YtbDl.AUDIO):
             return
 
+        a_codec = "acodec*=mp4a"
         a_ext = a_fmt
         if a_fmt != "m4a":
             a_ext = "webm"
+            a_codec = "acodec*=opus"
 
-        audio = "bestaudio[ext={}]".format(a_ext)
+        audio = "bestaudio[ext={}][{}]".format(a_ext, a_codec)
 
         if out_fmt == "audio_only":
+            if a_fmt != "m4a":
+                fmt_opts.insert(0, "bestaudio[ext=m4a][acodec*=mp4a]")
+
             fmt_opts.insert(0, audio)
 
             if a_fmt == "mp3":
@@ -213,13 +218,16 @@ class YtbDl(QThread):
                     or not isinstance(hdr, bool)):
                 return
 
-            codec = "vcodec!*=av01"
+            v_codec = "vcodec!*=av01"
             v_ext = v_fmt
             if v_fmt != "mp4":
-                v_ext = "webm"
-                codec = "vcodec!*=vp9.2"
+                video = "bestvideo[ext={}][{}][width<={}]".format("mp4", v_codec, width)
+                fmt_opts.insert(0, "{}+{}".format(video, "bestaudio[ext=m4a][acodec*=mp4a]"))
 
-            video = "bestvideo[ext={}][{}][width<={}]".format(v_ext, codec, width)
+                v_ext = "webm"
+                v_codec = "vcodec!*=vp9.2"
+
+            video = "bestvideo[ext={}][{}][width<={}]".format(v_ext, v_codec, width)
             fmt_opts.insert(0, "{}+{}".format(video, audio))
 
             if hdr and v_ext == "webm":
@@ -262,7 +270,7 @@ class YtbDl(QThread):
             self.opts["outtmpl"] = os.path.join(self.output_path, "%(title).100s.%(ext)s")
             
             if self.ytb_info[url].id or (not ext_url):
-                with youtube_dl.YoutubeDL(self.opts) as ydl:
+                with yt_dlp.YoutubeDL(self.opts) as ydl:
                     ydl.download([url])
 
             else:
@@ -286,7 +294,7 @@ class YtbDl(QThread):
                     else:
                         self.opts["outtmpl"] = os.path.join(entry_path, "%(title).100s.%(ext)s")
 
-                    with youtube_dl.YoutubeDL(self.opts) as ydl:
+                    with yt_dlp.YoutubeDL(self.opts) as ydl:
                         ydl.download([ext_url + entry_id])
 
     def hook(self, data):
