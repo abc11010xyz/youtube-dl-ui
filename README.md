@@ -5,6 +5,7 @@
 `#re`
 `#shutil`
 `#yt_dlp`
+`#progress_hooks`
 `#QThread`
 `#Signal`
 `#QSettings`
@@ -14,7 +15,14 @@
 `#decorator`
 `#setStyleSheet`
 `#FFmpeg`
+`#mp4`
+`#mkv`
+`#m4a`
+`#webm`
+`#mp3`
+`#ogg`
 `#pyinstaller`
+`#sys._MEIPASS`
 
 ## Requirements
 * [Python 3](https://www.python.org/downloads/)

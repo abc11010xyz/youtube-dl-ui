@@ -91,7 +91,7 @@ class YtbInfo(QThread):
 
 class YtbDl(QThread):
 
-    VERSION = "0.0.2"
+    VERSION = "0.0.3"
 
     OUTPUT_FORMAT = [
         "default",
@@ -257,7 +257,7 @@ class YtbDl(QThread):
                 return
 
             title = self.ytb_info[url].title
-            
+
             if not title:
                 self.error.append(url)
                 continue
@@ -270,8 +270,13 @@ class YtbDl(QThread):
             self.opts["outtmpl"] = os.path.join(self.output_path, "%(title).100s.%(ext)s")
             
             if self.ytb_info[url].id or (not ext_url):
-                with yt_dlp.YoutubeDL(self.opts) as ydl:
-                    ydl.download([url])
+                try:
+                    with yt_dlp.YoutubeDL(self.opts) as ydl:
+                        ydl.download([url])
+                except:
+                    self.opts["format"] = "best"
+                    with yt_dlp.YoutubeDL(self.opts) as ydl:
+                        ydl.download([url])
 
             else:
                 entry_len = len(self.ytb_info[url].entry_ids)
@@ -294,15 +299,20 @@ class YtbDl(QThread):
                     else:
                         self.opts["outtmpl"] = os.path.join(entry_path, "%(title).100s.%(ext)s")
 
-                    with yt_dlp.YoutubeDL(self.opts) as ydl:
-                        ydl.download([ext_url + entry_id])
+                    try:
+                        with yt_dlp.YoutubeDL(self.opts) as ydl:
+                            ydl.download([ext_url + entry_id])
+                    except:
+                        self.opts["format"] = "best"
+                        with yt_dlp.YoutubeDL(self.opts) as ydl:
+                            ydl.download([ext_url + entry_id])
 
     def hook(self, data):
         if data["status"] == "downloading":
             info = {
                 "title": self.title_info,
                 "entry": self.entry_info,
-                "per": float(data["_percent_str"][:-1]),
+                "per": round(data["downloaded_bytes"]/data["total_bytes"]*100, 2),
             }
 
             self.prog_signal.emit(info)
